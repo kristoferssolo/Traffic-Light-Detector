@@ -4,10 +4,9 @@ import sys
 from detector.paths import create_dirs
 
 ARGS = """
-main.py
-main.py <operations>
+Usage: main.py [OPTION]
 
-Operations:
+Options:
     -h --help       Displays this list
     -e --extract    Excracts and cropps traffic light images from given images in ./assets/exctraction/input/ to ./assets/exctraction/cropped/
     -t --train      Trains model
