@@ -3,13 +3,9 @@
 import logging
 from pathlib import Path
 
-# import cv2
-# import numpy as np
 from detector.object_detection import load_ssd_coco, perform_object_detection
 from detector.paths import IMAGES_IN_PATH, LOGS_PATH, MODEL_PATH
 from tensorflow import keras
-# from tensorflow.keras.applications import imagenet_utils
-# from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
 
 # Set up logging
 logger = logging.getLogger(__name__)
