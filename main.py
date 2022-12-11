@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 import argparse
 import importlib
+from pathlib import Path
 
-from detector.paths import create_dirs
+from detector.paths import BASE_PATH, create_dirs, LOGS_PATH
+from loguru import logger
+
+log_level = "DEBUG" if Path.exists(Path.joinpath(BASE_PATH, "debug")) else "INFO"
+
+
+# Set up logging
+logger.add(Path.joinpath(LOGS_PATH, "detection.log"), format="{time} | {level} | {message}", level=log_level, rotation="1 MB", compression="zip")
 
 
 parser = argparse.ArgumentParser(description="Traffic light detection script.")
@@ -30,8 +38,13 @@ parser.add_argument(
     action="store_true",
     help="detects traffic lights in videos located in ./assets/detection/videos_in/",
 )
+parser.add_argument(
+    "--test",
+    action="store_true",
+)
 
 
+@logger.catch
 def main(args) -> None:
     create_dirs()
     if args.extract:
@@ -45,7 +58,10 @@ def main(args) -> None:
         module.detect_traffic_light_color_image()
     if args.video:
         module = importlib.import_module("detector.detect_traffic_light_color_video")
-        module.detect_traffic_light_color_image()
+        module.detect_traffic_light_color_video()
+    if args.test:
+        module = importlib.import_module("detector.test")
+        module.main()
 
 
 if __name__ == "__main__":

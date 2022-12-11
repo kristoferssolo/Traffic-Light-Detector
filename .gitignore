@@ -130,3 +130,4 @@ dmypy.json
 
 assets/*
 model.h5
+debug
