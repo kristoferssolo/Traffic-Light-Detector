@@ -4,14 +4,13 @@ of a traffic light. Performance on the validation data set is saved
 to a directory. Also, the best neural network model is saved as traffic.h5.
 """
 
-import collections  # Handles specialized container datatypes
-import logging
+import collections
 from pathlib import Path
 
-import cv2  # Computer vision library
-import matplotlib.pyplot as plt  # Plotting library
-import numpy as np  # Scientific computing library
-import tensorflow as tf  # Machine learning library
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
 from detector.object_detection import (
     double_shuffle,
     load_rgb_images,
@@ -19,14 +18,14 @@ from detector.object_detection import (
 )
 from detector.paths import (
     GREEN_PATH,
-    LOGS_PATH,
     MODEL_PATH,
     NOT_PATH,
     RED_PATH,
     VALID_PATH,
     YELLOW_PATH,
 )
-from tensorflow import keras  # Library for neural networks
+from loguru import logger
+from tensorflow import keras
 from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import (
@@ -41,18 +40,13 @@ from tensorflow.keras.optimizers import Adadelta
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import to_categorical
 
-# Set up logging
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler(str(Path.joinpath(LOGS_PATH, f"{__name__}.log")))
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 # Show the version of TensorFlow and Keras that I am using
 logger.info("TensorFlow", tf.__version__)
 logger.info("Keras", keras.__version__)
 
 
+@logger.catch
 def show_history(history):
     """
     Visualize the neural network model training history
@@ -70,6 +64,7 @@ def show_history(history):
     plt.show()
 
 
+@logger.catch
 def Transfer(n_classes, freeze_layers=True):
     """Use the InceptionV3 neural network architecture to perform transfer learning."""
     logger.info("Loading Inception V3...")
@@ -120,6 +115,7 @@ def Transfer(n_classes, freeze_layers=True):
     return top_model
 
 
+@logger.catch
 def train_traffic_light_color() -> None:
     # Perform image augmentation.
     # Image augmentation enables us to alter the available images
@@ -249,13 +245,13 @@ def train_traffic_light_color() -> None:
     logger.info(f"Length of the validation data set: {len(x_valid)}")
 
     # Go through the validation data set, and see how the model did on each image
-    for idx, _ in enumerate(x_valid):
+    for x_value, y_value in zip(x_valid, y_valid):
 
         # Make the image a NumPy array
-        img_as_ar = np.array([x_valid[idx]])
+        image_as_ar = np.array(x_value)
 
         # Generate predictions
-        prediction = model.predict(img_as_ar)
+        prediction = model.predict(image_as_ar)
 
         # Determine what the label is based on the highest probability
         label = np.argmax(prediction)
@@ -263,8 +259,8 @@ def train_traffic_light_color() -> None:
         # Create the name of the directory and the file for the validation data set
         # After each run, delete this out_valid/ directory so that old files are not
         # hanging around in there.
-        file_name = str(Path.joinpath(VALID_PATH, f"{idx}_{label}_{np.argmax(str(y_valid[idx]))}.jpg"))
-        image = img_as_ar[0]
+        file_name = str(Path.joinpath(VALID_PATH, f"{idx}_{label}_{np.argmax(str(y_value))}.jpg"))
+        image = image_as_ar[0]
 
         # Reverse the image preprocessing process
         image = reverse_preprocess_inception(image)

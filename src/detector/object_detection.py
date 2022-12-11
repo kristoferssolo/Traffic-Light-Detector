@@ -1,20 +1,15 @@
-import tensorflow as tf
-import numpy as np
-import cv2
-import logging
-from detector.paths import LOGS_PATH, IMAGES_OUT_PATH
+"""This program helps detect objects (e.g. traffic lights) in images."""
 from pathlib import Path
+
+import cv2
+import numpy as np
+import tensorflow as tf
+from detector.paths import IMAGES_OUT_PATH
+from loguru import logger
 
 # Inception V3 model for Keras
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 
-
-# Set up logging
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler(str(Path.joinpath(LOGS_PATH, f"{__name__}.log")))
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 # COCO labels
 LABEL_PERSON = 1
@@ -24,20 +19,43 @@ LABEL_TRUCK = 8
 LABEL_TRAFFIC_LIGHT = 10
 LABEL_STOP_SIGN = 13
 
+# Create a dictionary that maps object class labels to their corresponding colors and text labels
+LABELS = {
+    LABEL_PERSON: (0, 255, 255),
+    LABEL_CAR: (255, 255, 0),
+    LABEL_BUS: (255, 255, 0),
+    LABEL_TRUCK: (255, 255, 0),
+    LABEL_TRAFFIC_LIGHT: (255, 255, 255),
+    LABEL_STOP_SIGN: (128, 0, 0),
+}
 
-def accept_box(boxes, box_index, tolerance) -> bool:
+LABEL_TEXT = {
+    LABEL_PERSON: "Person",
+    LABEL_CAR: "Car",
+    LABEL_BUS: "Bus",
+    LABEL_TRUCK: "Truck",
+    LABEL_TRAFFIC_LIGHT: "Traffic Light",
+    LABEL_STOP_SIGN: "Stop Sign",
+}
+
+
+@logger.catch
+def accept_box(boxes: list[dict[str, float]] | None, box_index: int, tolerance: int) -> bool:
     """Eliminate duplicate bounding boxes."""
-    box = boxes[box_index]
+    if boxes is not None:
+        box = boxes[box_index]
 
-    for idx in range(box_index):
-        other_box = boxes[idx]
-        if abs(center(other_box, "x") - center(box, "x")) < tolerance and abs(center(other_box, "y") - center(box, "y")) < tolerance:
-            return False
+        for idx in range(box_index):
+            other_box = boxes[idx]
+            if abs(center(other_box, "x") - center(box, "x")) < tolerance and abs(center(other_box, "y") - center(box, "y")) < tolerance:
+                return False
 
-    return True
+        return True
+    return False
 
 
-def load_model(model_name):
+@logger.catch
+def load_model(model_name: str) -> tf.saved_model.LoadOptions:
     """Download a pretrained object detection model, and save it to your hard drive."""
     url = f"http://download.tensorflow.org/models/object_detection/tf2/20200711/{model_name}.tar.gz"
 
@@ -49,7 +67,8 @@ def load_model(model_name):
     return tf.saved_model.load(f"{model_dir}/saved_model")
 
 
-def load_rgb_images(files, shape=None):
+@logger.catch
+def load_rgb_images(files, shape: tuple[int, int] | None = None):
     """Loads the images in RGB format."""
 
     # For each image in the directory, convert it from BGR format to RGB format
@@ -59,88 +78,73 @@ def load_rgb_images(files, shape=None):
     return [cv2.resize(img, shape) for img in images] if shape else images
 
 
-def load_ssd_coco():
+@logger.catch
+def load_ssd_coco() -> tf.saved_model.LoadOptions:
     """Load the neural network that has the SSD architecture, trained on the COCO data set."""
     return load_model("ssd_resnet50_v1_fpn_640x640_coco17_tpu-8")
 
 
-def save_image_annotated(img_rgb, file_name: Path, output, model_traffic_lights=None) -> None:
+@logger.catch
+def save_image_annotated(image_rgb, file_name: Path, output, model_traffic_lights=None) -> None:
     """Annotate the image with the object types, and generate cropped images of traffic lights."""
     output_file = Path.joinpath(IMAGES_OUT_PATH, file_name.name)
 
     # For each bounding box that was detected
-    for idx, _ in enumerate(output["boxes"]):
+    for idx, (box, object_class) in enumerate(zip(output["boxes"], output["detection_classes"])):
 
-        # Extract the type of the object that was detected
-        obj_class = output["detection_classes"][idx]
-
+        color = LABELS.get(object_class, (255, 255, 255))
         # How confident the object detection model is on the object's type
-        score = int(output["detection_scores"][idx] * 100)
+        score: int = object_class * 100
 
         # Extract the bounding box
         box = output["boxes"][idx]
 
-        color = None
-        label_text = ""
-
-        # if obj_class == LABEL_PERSON:
-        #     color = (0, 255, 255)
-        #     label_text = f"Person {score}"
-        # if obj_class == LABEL_CAR:
-        #     color = (255, 255, 0)
-        #     label_text = f"Car {score}"
-        # if obj_class == LABEL_BUS:
-        #     label_text = f"Bus {score}"
-        #     color = (255, 255, 0)
-        # if obj_class == LABEL_TRUCK:
-        #     color = (255, 255, 0)
-        #     label_text = f"Truck {score}"
-        # if obj_class == LABEL_STOP_SIGN:
-        #     color = (128, 0, 0)
-        #     label_text = f"Stop Sign {score}"
-        if obj_class == LABEL_TRAFFIC_LIGHT:
-            color = (255, 255, 255)
-            label_text = f"Traffic Light {score}"
-
-            if model_traffic_lights:
+        label_text = f"{object_class} {score}"
+        if object_class == LABEL_TRAFFIC_LIGHT:
+            if model_traffic_lights is not None:
 
                 # Annotate the image and save it
-                img_traffic_light = img_rgb[box["y"]:box["y2"], box["x"]:box["x2"]]
-                img_inception = cv2.resize(img_traffic_light, (299, 299))
+                image_traffic_light = image_rgb[box["y"]:box["y2"], box["x"]:box["x2"]]
+                image_inception = cv2.resize(image_traffic_light, (299, 299))
 
                 # Uncomment this if you want to save a cropped image of the traffic light
-                # cv2.imwrite(output_file.replace('.jpg', '_crop.jpg'), cv2.cvtColor(img_inception, cv2.COLOR_RGB2BGR))
-                img_inception = np.array([preprocess_input(img_inception)])
+                image_inception = np.array([preprocess_input(image_inception)])
 
-                prediction = model_traffic_lights.predict(img_inception)
+                prediction = model_traffic_lights.predict(image_inception)
                 label = np.argmax(prediction)
                 score_light = int(np.max(prediction) * 100)
 
-                match label:
-                    case 0: label_text = f"Green {score_light}"
-                    case 1: label_text = f"Yellow {score_light}"
-                    case 2: label_text = f"Red {score_light}"
-                    case _: label_text = "NO-LIGHT"
+                if label == 0:
+                    label_text = f"Green {score_light}"
+                elif label == 1:
+                    label_text = f"Yellow {score_light}"
+                elif label == 2:
+                    label_text = f"Red {score_light}"
+                else:
+                    label_text = "NO-LIGHT"
 
-        if color and label_text and accept_box(output["boxes"], idx, 5) and score > 50:
-            cv2.rectangle(img_rgb, (box["x"], box["y"]), (box["x2"], box["y2"]), color, 2)
-            cv2.putText(img_rgb, label_text, (box["x"], box["y"]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            # Draw the bounding box and object class label on the image, if the confidence score is above 50 and the box is not a duplicate
+            if color and label_text and accept_box(output["boxes"], idx, 5) and score > 50:
+                cv2.rectangle(image_rgb, (box["x"], box["y"]), (box["x2"], box["y2"]), color, 2)
+                cv2.putText(image_rgb, label_text, (box["x"], box["y"]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-    cv2.imwrite(str(output_file), cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(str(output_file), cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
     logger.info(output_file)
 
 
-def center(box, coord_type):
+@logger.catch
+def center(box: dict[str, float], coord_type: str) -> float:
     """Get center of the bounding box."""
     return (box[coord_type] + box[coord_type + "2"]) / 2
 
 
+@logger.catch
 def perform_object_detection(model, file_name, save_annotated=False, model_traffic_lights=None):
     """Perform object detection on an image using the predefined neural network."""
     # Store the image
-    img_bgr = cv2.imread(str(file_name))
-    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-    input_tensor = tf.convert_to_tensor(img_rgb)  # Input needs to be a tensor
+    image_bgr = cv2.imread(str(file_name))
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    input_tensor = tf.convert_to_tensor(image_rgb)  # Input needs to be a tensor
     input_tensor = input_tensor[tf.newaxis, ...]
 
     # Run the model
@@ -150,8 +154,7 @@ def perform_object_detection(model, file_name, save_annotated=False, model_traff
 
     # Convert the tensors to a NumPy array
     num_detections = int(output.pop("num_detections"))
-    output = {key: value[0, :num_detections].numpy()
-              for key, value in output.items()}
+    output = {key: value[0, :num_detections].numpy() for key, value in output.items()}
     output["num_detections"] = num_detections
 
     logger.info(f"Detection classes: {output['detection_classes']}")
@@ -159,108 +162,90 @@ def perform_object_detection(model, file_name, save_annotated=False, model_traff
 
     # The detected classes need to be integers.
     output["detection_classes"] = output["detection_classes"].astype(np.int64)
-    output["boxes"] = [
-        {"y": int(box[0] * img_rgb.shape[0]), "x": int(box[1] * img_rgb.shape[1]), "y2": int(box[2] * img_rgb.shape[0]),
-         "x2": int(box[3] * img_rgb.shape[1])} for box in output["detection_boxes"]]
+    output["boxes"] = [{"y": int(box[0] * image_rgb.shape[0]),
+                        "x": int(box[1] * image_rgb.shape[1]),
+                        "y2": int(box[2] * image_rgb.shape[0]),
+                        "x2": int(box[3] * image_rgb.shape[1])}
+                       for box in output["detection_boxes"]]
 
     if save_annotated:
-        save_image_annotated(img_rgb, file_name, output, model_traffic_lights)
+        save_image_annotated(image_rgb, file_name, output, model_traffic_lights)
 
-    return img_rgb, output, file_name
+    return image_rgb, output, file_name
 
 
-def perform_object_detection_video(model, video_frame, model_traffic_lights=None):
+@logger.catch
+def perform_object_detection_video(video_frame, model, model_traffic_lights):
     """Perform object detection on a video using the predefined neural network."""
+
     # Store the image
-    img_rgb = cv2.cvtColor(video_frame, cv2.COLOR_BGR2RGB)
-    input_tensor = tf.convert_to_tensor(img_rgb)  # Input needs to be a tensor
+    image_rgb = cv2.cvtColor(video_frame, cv2.COLOR_BGR2RGB)
+    input_tensor = tf.convert_to_tensor(image_rgb)  # Input needs to be a tensor
     input_tensor = input_tensor[tf.newaxis, ...]
 
     # Run the model
     output = model(input_tensor)
 
     # Convert the tensors to a NumPy array
-    num_detections = int(output.pop("num_detections"))
-    output = {key: value[0, :num_detections].numpy()
-              for key, value in output.items()}
-    output["num_detections"] = num_detections
+    number_detections = int(output.pop("num_detections"))
+    output = {key: value[0, :number_detections].numpy() for key, value in output.items()}
+    output["num_detections"] = number_detections
 
     # The detected classes need to be integers.
     output["detection_classes"] = output["detection_classes"].astype(np.int64)
-    output["boxes"] = [
-        {"y": int(box[0] * img_rgb.shape[0]), "x": int(box[1] * img_rgb.shape[1]), "y2": int(box[2] * img_rgb.shape[0]),
-         "x2": int(box[3] * img_rgb.shape[1])} for box in output["detection_boxes"]]
+    output["boxes"] = [{"y": int(box[0] * image_rgb.shape[0]),
+                        "x": int(box[1] * image_rgb.shape[1]),
+                        "y2": int(box[2] * image_rgb.shape[0]),
+                        "x2": int(box[3] * image_rgb.shape[1])}
+                       for box in output["detection_boxes"]]
 
     # For each bounding box that was detected
-    for idx, _ in enumerate(output["boxes"]):
-
-        # Extract the type of the object that was detected
-        obj_class = output["detection_classes"][idx]
-
+    for idx, (box, object_class) in enumerate(zip(output.get("boxes"), output.get("detection_classes"))):
+        color = LABELS.get(object_class, None)
         # How confident the object detection model is on the object's type
-        score = int(output["detection_scores"][idx] * 100)
+        score: int = object_class * 100
+        label_text = f"{LABEL_TEXT.get(object_class)} {score}"
 
-        # Extract the bounding box
-        box = output["boxes"][idx]
+        if object_class == LABEL_TRAFFIC_LIGHT:
+            # Annotate the image and save it
+            image_traffic_light = image_rgb[box.get("y"):box.get("y2"), box.get("x"):box.get("x2")]
+            image_inception = cv2.resize(image_traffic_light, (299, 299))
 
-        color = None
-        label_text = ""
+            image_inception = np.array([preprocess_input(image_inception)])
 
-        # if obj_class == LABEL_PERSON:
-        #     color = (0, 255, 255)
-        #     label_text = "Person " + str(score)
-        # if obj_class == LABEL_CAR:
-        #     color = (255, 255, 0)
-        #     label_text = "Car " + str(score)
-        # if obj_class == LABEL_BUS:
-        #     color = (255, 255, 0)
-        #     label_text = "Bus " + str(score)
-        # if obj_class == LABEL_TRUCK:
-        #     color = (255, 255, 0)
-        #     label_text = "Truck " + str(score)
-        # if obj_class == LABEL_STOP_SIGN:
-        #     color = (128, 0, 0)
-        #     label_text = f"Stop Sign {score}"
-        if obj_class == LABEL_TRAFFIC_LIGHT:
-            color = (255, 255, 255)
-            label_text = f"Traffic Light {score}"
+            prediction = model_traffic_lights.predict(image_inception)
+            label = np.argmax(prediction)
+            score_light = int(np.max(prediction) * 100)
 
-            if model_traffic_lights:
-
-                # Annotate the image and save it
-                img_traffic_light = img_rgb[box["y"]:box["y2"], box["x"]:box["x2"]]
-                img_inception = cv2.resize(img_traffic_light, (299, 299))
-
-                img_inception = np.array([preprocess_input(img_inception)])
-
-                prediction = model_traffic_lights.predict(img_inception)
-                label = np.argmax(prediction)
-                score_light = int(np.max(prediction) * 100)
-
-                match label:
-                    case 0: label_text = f"Green {score_light}"
-                    case 1: label_text = f"Yellow {score_light}"
-                    case 2: label_text = f"Red {score_light}"
-                    case _: label_text = "NO-LIGHT"  # This is not a traffic light
+            if label == 0:
+                label_text = f"Green {score_light}"
+            elif label == 1:
+                label_text = f"Yellow {score_light}"
+            elif label == 2:
+                label_text = f"Red {score_light}"
+            else:
+                label_text = "NO-LIGHT"
 
         # Use the score variable to indicate how confident we are it is a traffic light (in % terms)
-        # On the actual video frame, we display the confidence that the light is either red, green,
-        # yellow, or not a valid traffic light.
-        if color and label_text and accept_box(output["boxes"], idx, 5) and score > 20:
-            cv2.rectangle(img_rgb, (box["x"], box["y"]), (box["x2"], box["y2"]), color, 2)
-            cv2.putText(img_rgb, label_text, (box["x"], box["y"]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        # On the actual video frame, we display the confidence that the light is either  green, yellow,
+        # red or not a valid traffic light.
+        if accept_box(output.get("boxes"), idx, 5) and score > 20:
+            cv2.rectangle(image_rgb, (box.get("x"), box.get("y")), (box.get("x2"), box.get("y2")), color, 2)
+            cv2.putText(image_rgb, label_text, (box.get("x"), box.get("y")), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+    return cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
 
 
-def double_shuffle(images, labels):
+@logger.catch
+def double_shuffle(images: list[str], labels: list[int]) -> tuple[list[str], list[int]]:
     """Shuffle the images to add some randomness."""
     indexes = np.random.permutation(len(images))
 
     return [images[idx] for idx in indexes], [labels[idx] for idx in indexes]
 
 
+@logger.catch
 def reverse_preprocess_inception(image_preprocessed):
-    """Reverse the preprocessing process."""
+    """Reverse the preprocessing process for an image that has been input to the Inception V3 model."""
     image = image_preprocessed + 1 * 127.5
     return image.astype(np.uint8)

@@ -1,6 +1,5 @@
 """This program extracts traffic lights from images."""
 
-import logging
 from pathlib import Path
 
 import cv2
@@ -9,16 +8,11 @@ from detector.object_detection import (
     load_ssd_coco,
     perform_object_detection,
 )
-from detector.paths import CROPPED_IMAGES_PATH, INPUT_PATH, LOGS_PATH
-
-# Set up logging
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler(str(Path.joinpath(LOGS_PATH, f"{__name__}.log")))
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+from detector.paths import CROPPED_IMAGES_PATH, INPUT_PATH
+from loguru import logger
 
 
+@logger.catch
 def extract_traffic_lights() -> None:
     files = Path.iterdir(INPUT_PATH)
 

@@ -1,6 +1,7 @@
-import logging
 from pathlib import Path
 from shutil import rmtree
+
+from loguru import logger
 
 
 BASE_PATH = Path(__file__).resolve().parent.parent.parent
@@ -30,14 +31,8 @@ INPUT_PATH = Path.joinpath(EXTRACTION_PATH, "input")
 PATHS = (LOGS_PATH, ASSETS_PATH, VALID_PATH, DETECTION_PATH, IMAGES_IN_PATH, IMAGES_OUT_PATH, VIDEOS_IN_PATH, VIDEOS_OUT_PATH,
          DATESET_PATH, GREEN_PATH, YELLOW_PATH, RED_PATH, NOT_PATH, EXTRACTION_PATH, CROPPED_IMAGES_PATH, INPUT_PATH)
 
-# Set up logging
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler(str(Path.joinpath(LOGS_PATH, f"{__name__}.log")))
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
-
+@logger.catch
 def create_dirs(fresh: bool = False) -> None:
     if fresh:
         rmtree(ASSETS_PATH)
