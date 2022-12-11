@@ -32,16 +32,12 @@ parser.add_argument(
     action="store_true",
     help="detects traffic lights in images located in ./assets/detection/images_in/",
 )
-parser.add_argument(
-    "-v",
-    "--video",
-    action="store_true",
-    help="detects traffic lights in videos located in ./assets/detection/videos_in/",
-)
-parser.add_argument(
-    "--test",
-    action="store_true",
-)
+# parser.add_argument(
+#     "-v",
+#     "--video",
+#     action="store_true",
+#     help="detects traffic lights in videos located in ./assets/detection/videos_in/",
+# )
 
 
 @logger.catch
@@ -56,12 +52,9 @@ def main(args) -> None:
     if args.image:
         module = importlib.import_module("detector.detect_traffic_light_color_image")
         module.detect_traffic_light_color_image()
-    if args.video:
-        module = importlib.import_module("detector.detect_traffic_light_color_video")
-        module.detect_traffic_light_color_video()
-    if args.test:
-        module = importlib.import_module("detector.test")
-        module.main()
+    # if args.video:
+    #     module = importlib.import_module("detector.detect_traffic_light_color_video")
+    #     module.detect_traffic_light_color_video()
 
 
 if __name__ == "__main__":
