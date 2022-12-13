@@ -14,7 +14,7 @@ from loguru import logger
 
 @logger.catch
 def extract_traffic_lights() -> None:
-    files = Path.iterdir(INPUT_PATH)
+    files = INPUT_PATH.iterdir()
 
     # Load the object detection model
     this_model = load_ssd_coco()
@@ -68,7 +68,7 @@ def extract_traffic_lights() -> None:
                 traffic_light = cv2.cvtColor(traffic_light, cv2.COLOR_RGB2BGR)
 
                 # Store the cropped image in a folder named 'traffic_light_cropped'
-                cv2.imwrite(str(Path.joinpath(CROPPED_IMAGES_PATH, f"{traffic_light_count}.jpg")), traffic_light)
+                cv2.imwrite(str(CROPPED_IMAGES_PATH.joinpath(f"{traffic_light_count}.jpg")), traffic_light)
 
                 # Increment the number of traffic lights by 1
                 traffic_light_count += 1

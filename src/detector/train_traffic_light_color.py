@@ -130,10 +130,10 @@ def train_traffic_light_color() -> None:
 
     # Load the cropped traffic light images from the appropriate directory
 
-    img_0_green = load_rgb_images(Path.iterdir(GREEN_PATH), shape)
-    img_1_yellow = load_rgb_images(Path.iterdir(YELLOW_PATH), shape)
-    img_2_red = load_rgb_images(Path.iterdir(RED_PATH), shape)
-    img_3_not_traffic_light = load_rgb_images(Path.iterdir(NOT_PATH), shape)
+    img_0_green = load_rgb_images(GREEN_PATH.iterdir(), shape)
+    img_1_yellow = load_rgb_images(YELLOW_PATH.iterdir(), shape)
+    img_2_red = load_rgb_images(RED_PATH.iterdir(), shape)
+    img_3_not_traffic_light = load_rgb_images(NOT_PATH.iterdir(), shape)
 
     # Create a list of the labels that is the same length as the number of images in each
     # category
@@ -259,7 +259,7 @@ def train_traffic_light_color() -> None:
         # Create the name of the directory and the file for the validation data set
         # After each run, delete this out_valid/ directory so that old files are not
         # hanging around in there.
-        file_name = str(Path.joinpath(VALID_PATH, f"{idx}_{label}_{np.argmax(str(y_value))}.jpg"))
+        file_name = str(VALID_PATH.joinpath(f"{idx}_{label}_{np.argmax(str(y_value))}.jpg"))
         image = image_as_ar[0]
 
         # Reverse the image preprocessing process

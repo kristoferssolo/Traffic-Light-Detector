@@ -87,7 +87,7 @@ def load_ssd_coco() -> tf.saved_model.LoadOptions:
 @logger.catch
 def save_image_annotated(image_rgb, file_name: Path, output, model_traffic_lights=None) -> None:
     """Annotate the image with the object types, and generate cropped images of traffic lights."""
-    output_file = Path.joinpath(IMAGES_OUT_PATH, file_name.name)
+    output_file = IMAGES_OUT_PATH.joinpath(file_name.name)
 
     # For each bounding box that was detected
     for idx, (box, object_class) in enumerate(zip(output["boxes"], output["detection_classes"])):
