@@ -5,8 +5,6 @@ to a directory. Also, the best neural network model is saved as traffic.h5.
 """
 
 import collections
-from pathlib import Path
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np

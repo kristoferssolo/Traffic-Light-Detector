@@ -1,6 +1,5 @@
 """This program extracts traffic lights from images."""
 
-from pathlib import Path
 
 import cv2
 from detector.object_detection import (
