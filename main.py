@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 import argparse
 import importlib
-from pathlib import Path
 
 from detector.paths import BASE_PATH, create_dirs, LOGS_PATH
 from loguru import logger
 
-log_level = "DEBUG" if Path.exists(Path.joinpath(BASE_PATH, "debug")) else "INFO"
+log_level = "DEBUG" if BASE_PATH.joinpath("debug").exists() else "INFO"
 
 
 # Set up logging
-logger.add(Path.joinpath(LOGS_PATH, "detection.log"), format="{time} | {level} | {message}", level=log_level, rotation="1 MB", compression="zip")
+logger.add(LOGS_PATH.joinpath("detection.log"), format="{time} | {level} | {message}", level=log_level, rotation="1 MB", compression="zip")
 
 
 parser = argparse.ArgumentParser(description="Traffic light detection script.")
