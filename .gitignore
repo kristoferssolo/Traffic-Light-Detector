@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 assets/*
+!/assets/haar
 model.h5
 debug
