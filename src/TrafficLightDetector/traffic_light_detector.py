@@ -30,7 +30,7 @@ class TrafficLightDetector:
         self.green = Color("GREEN", self.GREEN, self.GREEN_LOWER, self.GREEN_UPPER, hsv, minDist=30, param2=5)
         self.colors = [self.red, self.yellow, self.green]
 
-    def _draw_circle(self):
+    def _draw_circle(self) -> None:
         try:
             for color in self.colors:
                 if color.circle is not None:
@@ -50,5 +50,6 @@ class TrafficLightDetector:
                             cv2.circle(self.image_copy, (i[0], i[1]), i[2] + 10, color.color, 2)
                             cv2.circle(color.mask, (i[0], i[1]), i[2] + 30, (255, 255, 255), 2)
                             cv2.putText(self.image_copy, color.name, (i[0], i[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)
+                            logger.debug(color.name)
         except AttributeError:
             logger.warning("Image/frame was not specified")

@@ -7,14 +7,14 @@ from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 class TrafficLightDetectorImages(TrafficLightDetector):
 
-    def __init__(self, path) -> None:
+    def __init__(self, path: Path) -> None:
         self.path = path
-        self.image = cv2.imread(str(path))
-        super().__init__(self.image)
+        image = cv2.imread(str(path))
+        self._set_image(image)
 
     def _save_image(self) -> None:
         cv2.imwrite(str(IMAGES_OUT_PATH.joinpath(self.path.name)), self.image_copy)
 
     def draw(self) -> None:
-        self._draw_circle(self.image)
+        self._draw_circle()
         self._save_image()
