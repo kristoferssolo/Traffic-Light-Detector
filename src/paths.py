@@ -9,6 +9,7 @@ LOGS_PATH = BASE_PATH.joinpath(".logs")
 ASSETS_PATH = BASE_PATH.joinpath("assets")
 IMAGES_IN_PATH = ASSETS_PATH.joinpath("images_in")
 IMAGES_OUT_PATH = ASSETS_PATH.joinpath("images_out")
+HAAR_PATH = ASSETS_PATH.joinpath("haar").joinpath("TrafficLights.xml")
 
 PATHS = (LOGS_PATH, IMAGES_IN_PATH, IMAGES_OUT_PATH)
 

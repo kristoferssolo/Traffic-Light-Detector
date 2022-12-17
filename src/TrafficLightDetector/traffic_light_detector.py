@@ -35,21 +35,25 @@ class TrafficLightDetector:
             for color in self.colors:
                 if color.circle is not None:
 
-                    for i in color.circle[0, :]:
-                        if i[0] > self.size[1] or i[1] > self.size[0] or i[1] > self.size[0] * self.BOUNDARY:
+                    logger.debug(f"{color.circle = }")
+                    for values in color.circle[0, :]:
+                        if values[0] > self.size[1] or values[1] > self.size[0] or values[1] > self.size[0] * self.BOUNDARY:
                             continue
 
                         h, s = 0, 0
                         for inner_radius in range(-self.RADIUS, self.RADIUS):
                             for outter_radius in range(-self.RADIUS, self.RADIUS):
-                                if (i[1] + inner_radius) >= self.size[0] or (i[0] + outter_radius) >= self.size[1]:
+                                if (values[1] + inner_radius) >= self.size[0] or (values[0] + outter_radius) >= self.size[1]:
                                     continue
-                                h += color.mask[i[1] + inner_radius, i[0] + outter_radius]
+                                h += color.mask[values[1] + inner_radius, values[0] + outter_radius]
                                 s += 1
                         if h / s > 100:
-                            cv2.circle(self.image_copy, (i[0], i[1]), i[2] + 10, color.color, 2)
-                            cv2.circle(color.mask, (i[0], i[1]), i[2] + 30, (255, 255, 255), 2)
-                            cv2.putText(self.image_copy, color.name, (i[0], i[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)
-                            logger.debug(color.name)
+                            cv2.circle(self.image_copy, (values[0], values[1]), values[2] + 10, color.color, 2)
+                            cv2.circle(color.mask, (values[0], values[1]), values[2] + 30, (255, 255, 255), 2)
+                            cv2.putText(self.image_copy, color.name, (values[0], values[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)
+                            self.signal = color.name
         except AttributeError:
             logger.warning("Image/frame was not specified")
+
+    def get_signal(self) -> str:
+        return self.signal

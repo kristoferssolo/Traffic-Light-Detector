@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-from loguru import logger
 
+from loguru import logger
 from paths import create_dirs, IMAGES_IN_PATH
 
 
