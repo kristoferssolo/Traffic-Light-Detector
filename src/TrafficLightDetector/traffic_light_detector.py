@@ -1,5 +1,4 @@
 import cv2
-from loguru import logger
 from paths import HAAR_PATH
 from TrafficLightDetector.color import Color
 

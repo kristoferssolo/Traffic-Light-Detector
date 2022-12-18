@@ -1,5 +1,4 @@
 import cv2
-from loguru import logger
 from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 
