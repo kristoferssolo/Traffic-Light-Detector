@@ -13,7 +13,7 @@ class TrafficLightDetectorImages(TrafficLightDetector):
         self._set_image(image)
 
     def _save_image(self) -> None:
-        cv2.imwrite(str(IMAGES_OUT_PATH.joinpath(self.path.name)), self.image_copy)
+        cv2.imwrite(str(IMAGES_OUT_PATH.joinpath(self.path.name)), self.image)
 
     def draw(self) -> None:
         self._draw_circle()
