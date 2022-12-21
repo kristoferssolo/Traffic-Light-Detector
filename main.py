@@ -25,7 +25,7 @@ def main(args) -> None:
     create_dirs()
     if args.webcam:
         from TrafficLightDetector.traffic_light_webcam import TrafficLightDetectorWebcam
-        camera = TrafficLightDetectorWebcam()
+        camera = TrafficLightDetectorWebcam(0)  # Change number if webcam didn't detect
         camera.enable()
 
     if args.image:

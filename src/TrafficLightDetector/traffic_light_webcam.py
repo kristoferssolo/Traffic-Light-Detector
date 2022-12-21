@@ -4,8 +4,8 @@ from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 class TrafficLightDetectorWebcam(TrafficLightDetector):
 
-    def __init__(self) -> None:
-        self.video_capture = cv2.VideoCapture(0)  # Change number if webcam didn't detect
+    def __init__(self, source: int) -> None:
+        self.video_capture = cv2.VideoCapture(source)
 
     def enable(self) -> None:
         while True:
