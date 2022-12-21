@@ -22,6 +22,8 @@ class TrafficLightDetector:
     YELLOW = (0, 175, 225)
     GREEN = (0, 150, 0)
 
+    signal_color = ""
+
     def _set_image(self, image=None, roi=None, detectTrafficLights=True) -> None:
         self.image = image
         self.roi = self.image if roi is None else roi
@@ -62,7 +64,4 @@ class TrafficLightDetector:
                         if self.TEXT:
                             cv2.putText(self.roi if self.detect_traffic_lights else self.image, color.name,
                                         (value[0], value[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)  # draws text
-                        self.signal = color.name
-
-    def get_signal(self) -> str:
-        return self.signal
+                        self.signal_color = color.name
