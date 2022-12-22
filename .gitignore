@@ -130,6 +130,5 @@ dmypy.json
 
 assets/*
 !/assets/haar
-model.h5
 debug
 .logs/*

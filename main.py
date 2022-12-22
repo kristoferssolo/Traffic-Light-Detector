@@ -19,10 +19,10 @@ parser.add_argument(
     help="reads webcam inputs to determine traffic light color",
 )
 parser.add_argument(
-    "-c",
-    "--change",
+    "-a",
+    "--audio",
     action="store_true",
-    help="detects traffic lights change",
+    help="plays audio when green light is detected",
 )
 
 
@@ -41,7 +41,7 @@ def main(args) -> None:
         camera = TrafficLightDetectorWebcam(0)  # Change number if webcam didn't detect
         camera.enable()
 
-    if args.change:
+    if args.audio:
         from TrafficLightDetector.traffic_light_webcam import TrafficLightDetectorWebcam
         camera = TrafficLightDetectorWebcam(0, sound=True)  # Change number if webcam didn't detect
         camera.enable()

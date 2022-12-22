@@ -1,6 +1,7 @@
 import cv2
+from paths import SOUND_PATH
+from playsound import playsound
 from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
-from loguru import logger
 
 
 class TrafficLightDetectorWebcam(TrafficLightDetector):
@@ -26,7 +27,5 @@ class TrafficLightDetectorWebcam(TrafficLightDetector):
         cv2.imshow("Video", self.image)
 
     def _make_sound(self) -> None:
-        """Do some sound if green light"""
         if self.signal_color == "GREEN":
-            # DO SOME SOUND
-            logger.debug("DRIVE")
+            playsound(str(SOUND_PATH.joinpath("move.mp3")))

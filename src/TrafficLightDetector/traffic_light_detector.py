@@ -22,8 +22,6 @@ class TrafficLightDetector:
     YELLOW = (0, 175, 225)
     GREEN = (0, 150, 0)
 
-    signal_color = ""
-
     def _set_image(self, image=None, roi=None, detectTrafficLights=True) -> None:
         self.image = image
         self.roi = self.image if roi is None else roi
@@ -34,6 +32,7 @@ class TrafficLightDetector:
         self.green = Color("GREEN", self.GREEN, self.GREEN_LOWER, self.GREEN_UPPER, hsv, minDist=30, param2=5)
         self.colors = [self.red, self.yellow, self.green]
         self.detect_traffic_lights = detectTrafficLights
+        self.signal_color = ""
 
     def _outline_traffic_lights(self) -> None:
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -46,22 +45,23 @@ class TrafficLightDetector:
 
     def _draw_circle(self) -> None:
         for color in self.colors:
-            if color.circle is not None:
-                for value in color.circle[0, :]:
-                    if value[0] > self.size[1] or value[1] > self.size[0] or value[1] > self.size[0] * self.BOUNDARY:
-                        continue
+            if color.circle is None:
+                continue
+            for value in color.circle[0, :]:
+                if value[0] > self.size[1] or value[1] > self.size[0] or value[1] > self.size[0] * self.BOUNDARY:
+                    continue
 
-                    h, s = 0, 0
-                    for i in range(-self.RADIUS, self.RADIUS):
-                        for j in range(-self.RADIUS, self.RADIUS):
-                            if (value[1] + i) >= self.size[0] or (value[0] + j) >= self.size[1]:
-                                continue
-                            h += color.mask[value[1] + i, value[0] + j]
-                            s += 1
-                    if h / s > 100:
-                        cv2.circle(self.roi if self.detect_traffic_lights else self.image, (value[0], value[1]), value[2] + 10, color.color, 2)  # draws circle
-                        cv2.circle(color.mask, (value[0], value[1]), value[2] + 30, (255, 255, 255), 2)
-                        if self.TEXT:
-                            cv2.putText(self.roi if self.detect_traffic_lights else self.image, color.name,
-                                        (value[0], value[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)  # draws text
-                        self.signal_color = color.name
+                h, s = 0, 0
+                for i in range(-self.RADIUS, self.RADIUS):
+                    for j in range(-self.RADIUS, self.RADIUS):
+                        if (value[1] + i) >= self.size[0] or (value[0] + j) >= self.size[1]:
+                            continue
+                        h += color.mask[value[1] + i, value[0] + j]
+                        s += 1
+                if h / s > 100:
+                    cv2.circle(self.roi if self.detect_traffic_lights else self.image, (value[0], value[1]), value[2] + 10, color.color, 2)  # draws circle
+                    cv2.circle(color.mask, (value[0], value[1]), value[2] + 30, (255, 255, 255), 2)
+                    if self.TEXT:
+                        cv2.putText(self.roi if self.detect_traffic_lights else self.image, color.name,
+                                    (value[0], value[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)  # draws text
+                    self.signal_color = color.name
