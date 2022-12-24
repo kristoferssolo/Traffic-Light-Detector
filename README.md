@@ -21,9 +21,9 @@ pip install .
 
 `./main.py -i` -- Detects traffic lights and their signal color for all files located in `/assets/images_in/` and saves them in `/assets/images_out/`.
 
-`./main.py -c <int>` -- Uses webcam or any camera to detect traffic lights in real time.
+`./main.py -c <int>` -- Uses webcam or any camera connected to detect traffic lights in real time.
 
-`./main.py -sc <int>` -- Plays sound file located in `/assets/sound/move.mp3` whenever green light signal is detected via camera.
+`./main.py -sc <int>` -- Plays the sound file located in `/assets/sound/move.mp3` whenever a green light is detected by camera.
 
 ### Tip
 Replace `<int>` with your camera number specified by the operating system. Probably `0` or `1`, but can be higher.
