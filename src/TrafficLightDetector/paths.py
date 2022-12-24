@@ -3,21 +3,21 @@ from shutil import rmtree
 
 from loguru import logger
 
-
-BASE_PATH = Path(__file__).resolve().parent.parent
+BASE_PATH = Path(__file__).resolve().parent.parent.parent
 LOGS_PATH = BASE_PATH.joinpath(".logs")
 ASSETS_PATH = BASE_PATH.joinpath("assets")
 IMAGES_IN_PATH = ASSETS_PATH.joinpath("images_in")
 IMAGES_OUT_PATH = ASSETS_PATH.joinpath("images_out")
 HAAR_PATH = ASSETS_PATH.joinpath("haar").joinpath("TrafficLights.xml")
 SOUND_PATH = ASSETS_PATH.joinpath("sound")
+TESTS_PATH = BASE_PATH.joinpath("tests")
 
 PATHS = (LOGS_PATH, IMAGES_IN_PATH, IMAGES_OUT_PATH, SOUND_PATH)
 
 
 log_level = "DEBUG" if BASE_PATH.joinpath("debug").exists() else "INFO"
 # Set up logging
-logger.add(LOGS_PATH.joinpath("detection.log"), format="{time} | {level} | {message}", level=log_level, rotation="10 MB", compression="zip")
+logger.add(LOGS_PATH.joinpath("detection.log"), format="{time} | {level} | {message}", level=log_level, rotation="1 MB", compression="zip")
 
 
 @logger.catch
