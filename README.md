@@ -25,6 +25,7 @@ pip install .
 
 `./main.py -sc <int>` -- Plays sound file located in `/assets/sound/move.mp3` whenever green light signal is detected via camera.
 
+### Tip
 Replace `<int>` with your camera number specified by the operating system. Probably `0` or `1`, but can be higher.
 
 ## To Do
