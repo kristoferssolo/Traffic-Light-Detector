@@ -2,27 +2,45 @@
 import argparse
 
 from loguru import logger
-from paths import create_dirs, IMAGES_IN_PATH
+
+from TrafficLightDetector.paths import IMAGES_IN_PATH, create_dirs
+from TrafficLightDetector.traffic_light_camera import \
+    TrafficLightDetectorCamera
+from TrafficLightDetector.traffic_light_images import \
+    TrafficLightDetectorImages
+
+
+def pos_int(string: str) -> int:
+    try:
+        value = int(string)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected integer, got {string!r}")
+    if value < 0:
+        raise argparse.ArgumentTypeError(f"expected non negative number, got {value}")
+    return value
 
 
 parser = argparse.ArgumentParser(description="Traffic light detection script.")
-parser.add_argument(
+group = parser.add_mutually_exclusive_group()
+group.add_argument(
     "-i",
     "--image",
     action="store_true",
-    help="detects traffic lights in images located in ./assets/images_in/",
+    help="Detects traffic lights in images located in ./assets/images_in/",
+)
+group.add_argument(
+    "-c",
+    "--camera",
+    type=pos_int,
+    nargs="?",
+    const=0,
+    metavar="int",
+    help="Reads camera inputs to determine traffic light color. (Default: %(default)s)",
 )
 parser.add_argument(
-    "-w",
-    "--webcam",
-    action="store_true",
-    help="reads webcam inputs to determine traffic light color",
-)
-parser.add_argument(
-    "-a",
-    "--audio",
-    action="store_true",
-    help="plays audio when green light is detected",
+    "-s",
+    "--sound",
+    action="store_true"
 )
 
 
@@ -31,19 +49,12 @@ def main(args) -> None:
     create_dirs()
 
     if args.image:
-        from TrafficLightDetector.traffic_light_images import TrafficLightDetectorImages
         for path in IMAGES_IN_PATH.iterdir():
             image = TrafficLightDetectorImages(path)
             image.draw()
 
-    if args.webcam:
-        from TrafficLightDetector.traffic_light_webcam import TrafficLightDetectorWebcam
-        camera = TrafficLightDetectorWebcam(0)  # Change number if webcam didn't detect
-        camera.enable()
-
-    if args.audio:
-        from TrafficLightDetector.traffic_light_webcam import TrafficLightDetectorWebcam
-        camera = TrafficLightDetectorWebcam(0, sound=True)  # Change number if webcam didn't detect
+    if args.camera is not None:
+        camera = TrafficLightDetectorCamera(args.camera, sound=args.sound)  # Change number if webcam didn't detect
         camera.enable()
 
 
