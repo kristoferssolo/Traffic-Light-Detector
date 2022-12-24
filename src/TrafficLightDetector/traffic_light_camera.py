@@ -1,10 +1,11 @@
 import cv2
-from paths import SOUND_PATH
 from playsound import playsound
+
+from TrafficLightDetector.paths import SOUND_PATH
 from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 
-class TrafficLightDetectorWebcam(TrafficLightDetector):
+class TrafficLightDetectorCamera(TrafficLightDetector):
 
     def __init__(self, source: int, sound: bool = False) -> None:
         self.video_capture = cv2.VideoCapture(source)
