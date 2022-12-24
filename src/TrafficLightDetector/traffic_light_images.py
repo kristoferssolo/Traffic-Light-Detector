@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import cv2
-from paths import IMAGES_OUT_PATH
+
+from TrafficLightDetector.paths import IMAGES_OUT_PATH
 from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 
