@@ -1,6 +1,7 @@
 import cv2
-from paths import HAAR_PATH
-from TrafficLightDetector.color import Color
+
+from TrafficLightDetector.color import ColorAttributes, ColorRange
+from TrafficLightDetector.paths import HAAR_PATH
 
 
 class TrafficLightDetector:
@@ -10,12 +11,12 @@ class TrafficLightDetector:
     BOUNDARY = 2
     TEXT = False
     # HSV values
-    RED_LOWER = ((160, 100, 100), (0, 100, 100))
-    RED_UPPER = ((180, 255, 255), (10, 255, 255))
-    YELLOW_LOWER = ((15, 150, 150), (15, 100, 100))
-    YELLOW_UPPER = ((35, 255, 255), (35, 255, 255))
-    GREEN_LOWER = ((40, 50, 50), (95, 45, 38))
-    GREEN_UPPER = ((90, 255, 255), (130, 60, 60))
+    RED_LOWER = ColorRange((160, 100, 100), (0, 100, 100))
+    RED_UPPER = ColorRange((180, 255, 255), (10, 255, 255))
+    YELLOW_LOWER = ColorRange((15, 150, 150), (15, 100, 100))
+    YELLOW_UPPER = ColorRange((35, 255, 255), (35, 255, 255))
+    GREEN_LOWER = ColorRange((40, 50, 50), (95, 45, 38))
+    GREEN_UPPER = ColorRange((90, 255, 255), (130, 60, 60))
 
     # BGR values
     RED = (0, 0, 200)
@@ -25,11 +26,11 @@ class TrafficLightDetector:
     def _set_image(self, image=None, roi=None, detectTrafficLights=True) -> None:
         self.image = image
         self.roi = self.image if roi is None else roi
-        self.size = self.image.shape if roi is None else self.roi.shape
+        self.size = self.roi.shape if roi is not None else self.image.shape
         hsv = cv2.cvtColor(self.image if roi is None else self.roi, cv2.COLOR_BGR2HSV)
-        self.red = Color("RED", self.RED, self.RED_LOWER, self.RED_UPPER, hsv, minDist=80, param2=10)
-        self.yellow = Color("YELLOW", self.YELLOW, self.YELLOW_LOWER, self.YELLOW_UPPER, hsv, minDist=60, param2=10)
-        self.green = Color("GREEN", self.GREEN, self.GREEN_LOWER, self.GREEN_UPPER, hsv, minDist=30, param2=5)
+        self.red = ColorAttributes("RED", self.RED, self.RED_LOWER, self.RED_UPPER, hsv, minDist=80, param2=10)
+        self.yellow = ColorAttributes("YELLOW", self.YELLOW, self.YELLOW_LOWER, self.YELLOW_UPPER, hsv, minDist=60, param2=10)
+        self.green = ColorAttributes("GREEN", self.GREEN, self.GREEN_LOWER, self.GREEN_UPPER, hsv, minDist=30, param2=5)
         self.colors = [self.red, self.yellow, self.green]
         self.detect_traffic_lights = detectTrafficLights
         self.signal_color = ""
