@@ -7,7 +7,6 @@ from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 
 class TrafficLightDetectorImages(TrafficLightDetector):
-
     def __init__(self, path: Path) -> None:
         self.path = path
         self._set_image(cv2.imread(str(self.path)))

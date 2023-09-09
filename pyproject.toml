@@ -1,10 +1,32 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-addopts = "--cov=TrafficLightDetector"
-testpaths = ["tests"]
+[project]
+name = "TrafficLightDetector"
+version = "0.1.0"
+description = "Reduce traffic congestion effects due to human reaction times at intersections with traffic lights by utilizing a computer system based on direct communication method of changes in the circumscribed route intersection."
+authors = [
+  { name = "Kristofers Solo", email = "dev@kristofers.xyz" },
+  { name = "Alan Alexander Cerna" },
+]
+keywords = ["detection", "traffic light"]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPLv3" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3:10",
+  "Programming Language :: Python :: 3:11",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: Linux",
+]
+dependencies = ["loguru==0.7", "opencv-python~=4.8", "magicsound==0.0.5"]
+
+[project.urls]
+"Source" = "https://github.com/kristoferssolo/Traffic-Light-Detector"
+"Description" = "https://github.com/kristoferssolo/Traffic-Light-Detector/blob/main/DESCRIPTION.md"
+"Bug Tracker" = "https://github.com/kristoferssolo/Traffic-Light-Detector/issues"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -19,3 +41,10 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
+
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"

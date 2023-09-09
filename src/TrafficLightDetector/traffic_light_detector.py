@@ -28,9 +28,27 @@ class TrafficLightDetector:
         self.roi = self.image if roi is None else roi
         self.size = self.roi.shape if roi is not None else self.image.shape
         hsv = cv2.cvtColor(self.image if roi is None else self.roi, cv2.COLOR_BGR2HSV)
-        self.red = ColorAttributes("RED", self.RED, self.RED_LOWER, self.RED_UPPER, hsv, minDist=80, param2=10)
-        self.yellow = ColorAttributes("YELLOW", self.YELLOW, self.YELLOW_LOWER, self.YELLOW_UPPER, hsv, minDist=60, param2=10)
-        self.green = ColorAttributes("GREEN", self.GREEN, self.GREEN_LOWER, self.GREEN_UPPER, hsv, minDist=30, param2=5)
+        self.red = ColorAttributes(
+            "RED", self.RED, self.RED_LOWER, self.RED_UPPER, hsv, minDist=80, param2=10
+        )
+        self.yellow = ColorAttributes(
+            "YELLOW",
+            self.YELLOW,
+            self.YELLOW_LOWER,
+            self.YELLOW_UPPER,
+            hsv,
+            minDist=60,
+            param2=10,
+        )
+        self.green = ColorAttributes(
+            "GREEN",
+            self.GREEN,
+            self.GREEN_LOWER,
+            self.GREEN_UPPER,
+            hsv,
+            minDist=30,
+            param2=5,
+        )
         self.colors = [self.red, self.yellow, self.green]
         self.detect_traffic_lights = detectTrafficLights
         self.signal_color = ""
@@ -39,8 +57,10 @@ class TrafficLightDetector:
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         # draw rectangle around traffic lights
         for x, y, width, height in self.CASCADE.detectMultiScale(gray, 1.2, 5):
-            cv2.rectangle(self.image, (x, y), (x + width, y + height), (255, 0, 0), self.BOUNDARY)
-            roi = self.image[y:y + height, x:x + width]
+            cv2.rectangle(
+                self.image, (x, y), (x + width, y + height), (255, 0, 0), self.BOUNDARY
+            )
+            roi = self.image[y : y + height, x : x + width]
             self._set_image(self.image, roi)
             self._draw_circle()
 
@@ -49,20 +69,46 @@ class TrafficLightDetector:
             if color.circle is None:
                 continue
             for value in color.circle[0, :]:
-                if value[0] > self.size[1] or value[1] > self.size[0] or value[1] > self.size[0] * self.BOUNDARY:
+                if (
+                    value[0] > self.size[1]
+                    or value[1] > self.size[0]
+                    or value[1] > self.size[0] * self.BOUNDARY
+                ):
                     continue
 
                 h, s = 0, 0
                 for i in range(-self.RADIUS, self.RADIUS):
                     for j in range(-self.RADIUS, self.RADIUS):
-                        if (value[1] + i) >= self.size[0] or (value[0] + j) >= self.size[1]:
+                        if (value[1] + i) >= self.size[0] or (
+                            value[0] + j
+                        ) >= self.size[1]:
                             continue
                         h += color.mask[value[1] + i, value[0] + j]
                         s += 1
                 if h / s > 100:
-                    cv2.circle(self.roi if self.detect_traffic_lights else self.image, (value[0], value[1]), value[2] + 10, color.color, 2)  # draws circle
-                    cv2.circle(color.mask, (value[0], value[1]), value[2] + 30, (255, 255, 255), 2)
+                    cv2.circle(
+                        self.roi if self.detect_traffic_lights else self.image,
+                        (value[0], value[1]),
+                        value[2] + 10,
+                        color.color,
+                        2,
+                    )  # draws circle
+                    cv2.circle(
+                        color.mask,
+                        (value[0], value[1]),
+                        value[2] + 30,
+                        (255, 255, 255),
+                        2,
+                    )
                     if self.TEXT:
-                        cv2.putText(self.roi if self.detect_traffic_lights else self.image, color.name,
-                                    (value[0], value[1]), self.FONT, 1, color.color, 2, cv2.LINE_AA)  # draws text
+                        cv2.putText(
+                            self.roi if self.detect_traffic_lights else self.image,
+                            color.name,
+                            (value[0], value[1]),
+                            self.FONT,
+                            1,
+                            color.color,
+                            2,
+                            cv2.LINE_AA,
+                        )  # draws text
                     self.signal_color = color.name

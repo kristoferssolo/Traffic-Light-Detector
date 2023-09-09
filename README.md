@@ -1,10 +1,10 @@
 # Traffic Light Detector
 Traffic Light recognition and color detection
 
-![Tests](https://github.com/kristoferssolo/Traffic-Light-Detector/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/kristoferssolo/Traffic-Light-Detector/actions/workflows/ruff.yml/badge.svg)
 
 ## Description
-See [DESCRIPTION.md](./DESCRIPTION.md)
+See [DESCRIPTION.md](./DESCRIPTION.md) [lv]
 
 ![Red light](./media/red.jpg)
 
@@ -29,5 +29,4 @@ pip install .
 Replace `<int>` with your camera number specified by the operating system. Probably `0` or `1`, but can be higher.
 
 ## To Do
-- [ ] Write unit tests.
 - [ ] Create/find better traffic light model for better traffic light recognition.

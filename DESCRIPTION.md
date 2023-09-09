@@ -1,3 +1,4 @@
+# Traffic Light Detector
 ## Likvidēt cilvēka reakcijas laika ietekmi uz satiksmes sastrēgumu realizāciju ar datorsistēmu, kas balstīta tiešā norobežota krustojuma izmaiņu komunikācijas metodikā, maršruta posmā, kas aprīkots ar gaismas signalizācijas satiksmes regulatoru.
 
 > Reduce traffic congestion effects due to human reaction times at intersections with traffic lights by utilizing a computer system based on direct communication  method of changes in the circumscribed route intersection.

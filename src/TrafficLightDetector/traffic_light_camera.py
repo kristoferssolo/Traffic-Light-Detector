@@ -1,12 +1,11 @@
 import cv2
-from playsound import playsound
+from magicsound import magicsound
 
 from TrafficLightDetector.paths import SOUND_PATH
 from TrafficLightDetector.traffic_light_detector import TrafficLightDetector
 
 
 class TrafficLightDetectorCamera(TrafficLightDetector):
-
     def __init__(self, source: int, sound: bool = False) -> None:
         self.video_capture = cv2.VideoCapture(source)
         self.sound = sound
@@ -29,4 +28,4 @@ class TrafficLightDetectorCamera(TrafficLightDetector):
 
     def _make_sound(self) -> None:
         if self.signal_color == "GREEN":
-            playsound(str(SOUND_PATH.joinpath("move.mp3")))
+            magicsound(str(SOUND_PATH.joinpath("move.mp3")))

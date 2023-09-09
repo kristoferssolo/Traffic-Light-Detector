@@ -3,11 +3,9 @@ import argparse
 
 from loguru import logger
 
-from TrafficLightDetector.paths import IMAGES_IN_PATH, create_dirs
-from TrafficLightDetector.traffic_light_camera import \
-    TrafficLightDetectorCamera
-from TrafficLightDetector.traffic_light_images import \
-    TrafficLightDetectorImages
+from TrafficLightDetector.paths import create_dirs, IMAGES_IN_PATH
+from TrafficLightDetector.traffic_light_camera import TrafficLightDetectorCamera
+from TrafficLightDetector.traffic_light_images import TrafficLightDetectorImages
 
 
 def pos_int(string: str) -> int:
@@ -37,11 +35,7 @@ group.add_argument(
     metavar="int",
     help="Reads camera inputs to determine traffic light color. (Default: %(default)s)",
 )
-parser.add_argument(
-    "-s",
-    "--sound",
-    action="store_true"
-)
+parser.add_argument("-s", "--sound", action="store_true")
 
 
 @logger.catch
@@ -54,7 +48,9 @@ def main(args) -> None:
             image.draw()
 
     if args.camera is not None:
-        camera = TrafficLightDetectorCamera(args.camera, sound=args.sound)  # Change number if webcam didn't detect
+        camera = TrafficLightDetectorCamera(
+            args.camera, sound=args.sound
+        )  # Change number if webcam didn't detect
         camera.enable()
 
 
